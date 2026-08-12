@@ -1,0 +1,38 @@
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: default-deny
+  namespace: banking-credit-support
+spec:
+  podSelector: {}
+  policyTypes: [Ingress, Egress]
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: application-flow
+  namespace: banking-credit-support
+spec:
+  podSelector:
+    matchExpressions:
+      - key: app
+        operator: In
+        values: [web-ui, banking-api, ai-service]
+  policyTypes: [Ingress, Egress]
+  ingress:
+    - from:
+        - namespaceSelector: {}
+      ports:
+        - {protocol: TCP, port: 8080}
+        - {protocol: TCP, port: 8081}
+  egress:
+    - to:
+        - namespaceSelector: {}
+      ports:
+        - {protocol: TCP, port: 53}
+        - {protocol: UDP, port: 53}
+        - {protocol: TCP, port: 8080}
+        - {protocol: TCP, port: 8081}
+    - ports:
+        - {protocol: TCP, port: 443}
+        - {protocol: TCP, port: 5432}

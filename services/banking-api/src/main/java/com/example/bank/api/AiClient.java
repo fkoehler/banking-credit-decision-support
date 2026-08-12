@@ -1,9 +1,12 @@
 package com.example.bank.api;
 
 import java.math.BigDecimal;
+import java.net.http.HttpClient;
+import java.time.Duration;
 import java.util.List;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.MediaType;
+import org.springframework.http.client.JdkClientHttpRequestFactory;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClient;
 
@@ -11,8 +14,22 @@ import org.springframework.web.client.RestClient;
 public class AiClient {
     private final RestClient restClient;
 
-    public AiClient(RestClient.Builder builder, @Value("${app.ai-service-url}") String baseUrl) {
-        this.restClient = builder.baseUrl(baseUrl).build();
+    public AiClient(
+        RestClient.Builder builder,
+        @Value("${app.ai-service-url}") String baseUrl,
+        @Value("${app.ai-connect-timeout}") Duration connectTimeout,
+        @Value("${app.ai-read-timeout}") Duration readTimeout
+    ) {
+        HttpClient httpClient = HttpClient.newBuilder()
+            .connectTimeout(connectTimeout)
+            .version(HttpClient.Version.HTTP_1_1)
+            .build();
+        JdkClientHttpRequestFactory requestFactory = new JdkClientHttpRequestFactory(httpClient);
+        requestFactory.setReadTimeout(readTimeout);
+        this.restClient = builder
+            .requestFactory(requestFactory)
+            .baseUrl(baseUrl)
+            .build();
     }
 
     AiAssessment assess(CreditCase creditCase, String correlationId) {
@@ -57,4 +74,3 @@ public class AiClient {
         String generationMode, String modelVersion
     ) {}
 }
-

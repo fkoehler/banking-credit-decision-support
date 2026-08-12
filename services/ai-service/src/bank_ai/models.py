@@ -52,4 +52,3 @@ class DocumentSummary(BaseModel):
     title: str
     source: str
     chunkCount: int
-

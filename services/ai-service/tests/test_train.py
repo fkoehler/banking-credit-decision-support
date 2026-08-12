@@ -1,13 +1,13 @@
 from pathlib import Path
 
-from bank_ai.ml import RiskModel
+from bank_ai.ml import LocalRiskModel
 from bank_ai.models import CreditFeatures
 from bank_ai.train import train
 
 
 def test_training_produces_loadable_model(tmp_path: Path):
     report = train(tmp_path, rows=1_000)
-    model = RiskModel(tmp_path / "risk-model.joblib")
+    model = LocalRiskModel(tmp_path / "risk-model.joblib")
     probability, positives, risks = model.predict(
         CreditFeatures(
             profession="DENTIST",

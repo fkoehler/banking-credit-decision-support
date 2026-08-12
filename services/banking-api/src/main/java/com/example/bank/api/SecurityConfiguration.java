@@ -9,6 +9,8 @@ import org.springframework.security.config.annotation.method.configuration.Enabl
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
+import org.springframework.security.oauth2.server.resource.authentication.JwtGrantedAuthoritiesConverter;
 import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.web.cors.CorsConfiguration;
@@ -39,7 +41,7 @@ public class SecurityConfiguration {
             .csrf(csrf -> csrf.disable())
             .cors(Customizer.withDefaults())
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/actuator/health").permitAll()
+                .requestMatchers("/actuator/health/**", "/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
                 .requestMatchers("/api/v1/cases/*/decisions", "/api/v1/documents/**").hasRole("RISK_REVIEWER")
                 .anyRequest().authenticated())
             .httpBasic(Customizer.withDefaults())
@@ -49,14 +51,21 @@ public class SecurityConfiguration {
     @Bean
     @ConditionalOnProperty(name = "app.auth-mode", havingValue = "oidc")
     SecurityFilterChain oidcSecurity(HttpSecurity http) throws Exception {
+        JwtGrantedAuthoritiesConverter roles = new JwtGrantedAuthoritiesConverter();
+        roles.setAuthoritiesClaimName("roles");
+        roles.setAuthorityPrefix("ROLE_");
+        JwtAuthenticationConverter authenticationConverter = new JwtAuthenticationConverter();
+        authenticationConverter.setJwtGrantedAuthoritiesConverter(roles);
+
         return http
             .csrf(csrf -> csrf.disable())
             .cors(Customizer.withDefaults())
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/actuator/health").permitAll()
+                .requestMatchers("/actuator/health/**", "/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
                 .requestMatchers("/api/v1/cases/*/decisions", "/api/v1/documents/**").hasRole("RISK_REVIEWER")
                 .anyRequest().authenticated())
-            .oauth2ResourceServer(oauth -> oauth.jwt(Customizer.withDefaults()))
+            .oauth2ResourceServer(oauth -> oauth.jwt(jwt ->
+                jwt.jwtAuthenticationConverter(authenticationConverter)))
             .build();
     }
 
@@ -72,4 +81,3 @@ public class SecurityConfiguration {
         return source;
     }
 }
-

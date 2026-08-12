@@ -1,0 +1,4 @@
+$schema: https://azuremlschemas.azureedge.net/latest/managedOnlineEndpoint.schema.json
+name: banking-credit-risk
+auth_mode: aad_token
+public_network_access: disabled

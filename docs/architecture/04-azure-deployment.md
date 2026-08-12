@@ -10,7 +10,7 @@ flowchart TB
     gitlab["GitLab CI/CD<br/>OIDC federation"]
 
     subgraph azure["Azure subscription"]
-        frontdoor["Application Gateway / WAF<br/>TLS ingress"]
+        frontdoor["Organization edge (planned)<br/>Application Gateway / WAF"]
 
         subgraph vnet["Private virtual network"]
             subgraph aks["Private AKS cluster"]
@@ -60,3 +60,8 @@ flowchart TB
 - The public edge terminates TLS and applies WAF policy; application pods are not
   directly exposed.
 
+The Terraform baseline implements the private platform and service endpoints. The
+public edge remains an explicit integration point because certificates, DNS and a
+shared ingress topology are organization-specific. The checked-in Kubernetes
+ingress therefore uses a non-routable `.invalid` host and is not a claim of a
+production-ready internet boundary.

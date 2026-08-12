@@ -1,0 +1,19 @@
+$schema: https://azuremlschemas.azureedge.net/latest/managedOnlineDeployment.schema.json
+name: blue
+endpoint_name: banking-credit-risk
+model: azureml:synthetic-credit-risk@latest
+code_configuration:
+  code: ../../services/ai-service/src
+  scoring_script: bank_ai/score.py
+environment:
+  conda_file: conda.yml
+  image: mcr.microsoft.com/azureml/openmpi5.0-ubuntu24.04:latest
+instance_type: Standard_DS3_v2
+instance_count: 1
+request_settings:
+  request_timeout_ms: 10000
+  max_concurrent_requests_per_instance: 4
+liveness_probe:
+  initial_delay: 20
+readiness_probe:
+  initial_delay: 20

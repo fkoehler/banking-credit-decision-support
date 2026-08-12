@@ -15,7 +15,7 @@ class Settings(BaseSettings):
     ai_embedding_provider: str = "local"
     ai_generation_provider: str = "template"
     ai_vector_store: str = "postgres"
-    ai_local_embedding_model: str = "intfloat/multilingual-e5-small"
+    ai_local_embedding_model: str = "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2"
     ai_embedding_dimensions: int = 384
     ai_chunk_size: int = 700
     ai_chunk_overlap: int = 100

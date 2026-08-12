@@ -1,0 +1,12 @@
+name: credit-risk-inference
+channels:
+  - conda-forge
+dependencies:
+  - python=3.12
+  - pip
+  - pip:
+      - azureml-inference-server-http>=1.4,<2
+      - joblib>=1.4,<2
+      - numpy>=2.2,<2.5
+      - pandas>=2.2,<3
+      - scikit-learn>=1.6,<2

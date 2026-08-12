@@ -100,7 +100,8 @@ def train(output_dir: Path, rows: int = 8_000) -> dict:
 
     candidates = {
         "logistic-regression": make_pipeline(
-            StandardScaler(), LogisticRegression(max_iter=1_000, class_weight="balanced", random_state=42)
+            StandardScaler(),
+            LogisticRegression(max_iter=1_000, class_weight="balanced", random_state=42),
         ),
         "gradient-boosting": GradientBoostingClassifier(random_state=42),
     }
@@ -109,7 +110,9 @@ def train(output_dir: Path, rows: int = 8_000) -> dict:
         model.fit(x_train, y_train)
         validation_metrics[name] = metrics_for(model, x_validation, y_validation)
 
-    selected_name = min(validation_metrics, key=lambda name: validation_metrics[name]["brier_score"])
+    selected_name = min(
+        validation_metrics, key=lambda name: validation_metrics[name]["brier_score"]
+    )
     selected_model = candidates[selected_name]
     selected_model.fit(pd.concat([x_train, x_validation]), pd.concat([y_train, y_validation]))
     test_metrics = metrics_for(selected_model, x_test, y_test)
@@ -140,4 +143,3 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
-

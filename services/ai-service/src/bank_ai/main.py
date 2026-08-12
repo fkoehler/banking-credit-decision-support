@@ -5,7 +5,7 @@ from openai import OpenAIError
 
 from bank_ai.config import Settings, get_settings
 from bank_ai.generation import build_generator
-from bank_ai.ml import RiskModel, risk_band
+from bank_ai.ml import RiskPredictor, build_risk_predictor, risk_band
 from bank_ai.models import (
     AssessmentRequest,
     AssessmentResponse,
@@ -24,8 +24,8 @@ app = FastAPI(
 
 
 @lru_cache
-def risk_model() -> RiskModel:
-    return RiskModel(get_settings().ai_model_path)
+def risk_model() -> RiskPredictor:
+    return build_risk_predictor(get_settings())
 
 
 @lru_cache

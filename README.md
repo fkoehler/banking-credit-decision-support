@@ -16,6 +16,7 @@ review, DevSecOps and an Azure/AKS target architecture.
 - Local AI adapters that work without cloud credentials, plus configurable Azure
   OpenAI and Azure Machine Learning adapters.
 - Terraform, AKS manifests and a GitLab pipeline with explicit security gates.
+- GitHub Actions for the repository's public test signal.
 
 ## Start locally
 
@@ -71,4 +72,5 @@ infrastructure         Terraform, Kubernetes and Azure ML definitions
 ```
 
 The same checks are split into test, security, build and infrastructure stages in
-`.gitlab-ci.yml`.
+`.gitlab-ci.yml`; `.github/workflows/ci.yml` runs the portable test and platform
+validation subset on GitHub.

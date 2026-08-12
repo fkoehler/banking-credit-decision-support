@@ -1,0 +1,23 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: app-config
+  namespace: banking-credit-support
+data:
+  SPRING_PROFILES_ACTIVE: oidc
+  AUTH_MODE: oidc
+  API_HOST: 0.0.0.0
+  API_PORT: "8080"
+  AI_HOST: 0.0.0.0
+  AI_PORT: "8081"
+  AI_SERVICE_URL: http://ai-service:8081
+  AI_CONNECT_TIMEOUT: 2s
+  AI_READ_TIMEOUT: 15s
+  AI_INFERENCE_PROVIDER: azure-ml
+  AI_EMBEDDING_PROVIDER: azure-openai
+  AI_GENERATION_PROVIDER: azure-openai
+  AI_VECTOR_STORE: postgres
+  AI_EMBEDDING_DIMENSIONS: "384"
+  AI_CHUNK_SIZE: "700"
+  AI_CHUNK_OVERLAP: "100"
+  AI_RAG_TOP_K: "5"

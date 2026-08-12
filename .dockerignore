@@ -1,0 +1,10 @@
+.git
+.idea
+.run
+.data
+**/.venv
+**/node_modules
+**/target
+**/dist
+**/__pycache__
+services/ai-service/artifacts

@@ -9,10 +9,12 @@ GitLab protected variables or Azure Key Vault—never in the repository.
 | Variable | Default | Meaning |
 |---|---|---|
 | `APP_ENV` | `local` | Runtime profile label |
+| `SPRING_PROFILES_ACTIVE` | empty locally; `oidc` on AKS | Enables Spring's OIDC resource-server profile |
 | `API_HOST` / `API_PORT` | `127.0.0.1` / `8080` | Spring API listener |
 | `AI_HOST` / `AI_PORT` | `127.0.0.1` / `8081` | Internal FastAPI listener |
 | `WEB_HOST` / `WEB_PORT` | `127.0.0.1` / `5173` | Vite listener |
 | `AI_SERVICE_URL` | `http://127.0.0.1:8081` | Spring-to-Python base URL |
+| `AI_CONNECT_TIMEOUT` / `AI_READ_TIMEOUT` | `2s` / `15s` | Spring-to-Python request limits |
 | `VITE_API_URL` | `http://127.0.0.1:8080` | Browser-to-Spring base URL |
 | `WEB_ORIGIN` | `http://127.0.0.1:5173` | Allowed browser origin |
 
@@ -37,6 +39,9 @@ GitLab protected variables or Azure Key Vault—never in the repository.
 | `OIDC_ISSUER_URI` | empty | Entra issuer for `oidc` mode |
 | `AZURE_TENANT_ID` / `AZURE_CLIENT_ID` | empty | Azure identity metadata |
 
+The Entra application roles must emit `ADVISOR` and `RISK_REVIEWER` in the token's
+`roles` claim. Spring maps them to `ROLE_ADVISOR` and `ROLE_RISK_REVIEWER`.
+
 ## AI and retrieval
 
 | Variable | Default | Meaning |
@@ -47,7 +52,7 @@ GitLab protected variables or Azure Key Vault—never in the repository.
 | `AI_EMBEDDING_PROVIDER` | `local` | `local` or `azure-openai` |
 | `AI_GENERATION_PROVIDER` | `template` | `template` or `azure-openai` |
 | `AI_VECTOR_STORE` | `postgres` | Vector-store adapter |
-| `AI_LOCAL_EMBEDDING_MODEL` | `intfloat/multilingual-e5-small` | FastEmbed model id |
+| `AI_LOCAL_EMBEDDING_MODEL` | `sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2` | FastEmbed model id |
 | `AI_EMBEDDING_DIMENSIONS` | `384` | pgvector column dimension |
 | `AI_CHUNK_SIZE` / `AI_CHUNK_OVERLAP` | `700` / `100` | Approximate word chunking |
 | `AI_RAG_TOP_K` | `5` | Retrieved passages per assessment |
@@ -68,4 +73,3 @@ All are optional in the default local profile:
 
 AKS should use workload identity instead of API keys where the selected SDK and
 service support it. Key variables exist for explicit demo environments only.
-

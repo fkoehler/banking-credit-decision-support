@@ -14,12 +14,11 @@ spring:
       ddl-auto: validate
   flyway:
     enabled: true
-  security:
-    oauth2:
-      resourceserver:
-        jwt:
-          issuer-uri: ${OIDC_ISSUER_URI:}
 management:
+  endpoint:
+    health:
+      probes:
+        enabled: true
   endpoints:
     web:
       exposure:
@@ -27,6 +26,8 @@ management:
 app:
   auth-mode: ${AUTH_MODE:local}
   ai-service-url: ${AI_SERVICE_URL:http://127.0.0.1:8081}
+  ai-connect-timeout: ${AI_CONNECT_TIMEOUT:2s}
+  ai-read-timeout: ${AI_READ_TIMEOUT:15s}
   web-origin: ${WEB_ORIGIN:http://127.0.0.1:5173}
   local-users:
     advisor:
@@ -35,3 +36,6 @@ app:
     reviewer:
       username: ${LOCAL_REVIEWER_USERNAME:reviewer}
       password: ${LOCAL_REVIEWER_PASSWORD:reviewer-demo}
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html

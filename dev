@@ -14,7 +14,7 @@ required_command() {
 
 doctor() {
   local failed=0
-  for command_name in java direnv uv node pnpm psql pg_isready createdb; do
+  for command_name in sdk java direnv uv node pnpm psql pg_isready createdb pg_config; do
     required_command "$command_name" || failed=1
   done
 
@@ -42,7 +42,7 @@ doctor() {
 bootstrap() {
   doctor
   uv sync --project "$ROOT_DIR/services/ai-service"
-  pnpm --dir "$ROOT_DIR/services/web-ui" install --frozen-lockfile=false
+  pnpm --dir "$ROOT_DIR/services/web-ui" install --frozen-lockfile
   "$ROOT_DIR/mvnw" -q -f "$ROOT_DIR/pom.xml" -DskipTests package
 
   if ! pg_isready -h "${DATABASE_HOST:-127.0.0.1}" -p "${DATABASE_PORT:-5432}" >/dev/null 2>&1; then
@@ -56,6 +56,7 @@ bootstrap() {
   psql "${DATABASE_URL:-postgresql://${USER}@127.0.0.1:5432/bank_credit_support}" -v ON_ERROR_STOP=1 \
     -c "CREATE EXTENSION IF NOT EXISTS vector"
   uv run --project "$ROOT_DIR/services/ai-service" python -m bank_ai.train
+  uv run --project "$ROOT_DIR/services/ai-service" python -m bank_ai.bootstrap
   echo "Bootstrap complete. Run ./dev up."
 }
 
@@ -107,13 +108,21 @@ seed() {
 }
 
 test_all() {
+  required_command terraform
+  required_command kubectl
   "$ROOT_DIR/mvnw" -f "$ROOT_DIR/pom.xml" test
   "$ROOT_DIR/services/ai-service/.venv/bin/ruff" check \
     "$ROOT_DIR/services/ai-service/src" "$ROOT_DIR/services/ai-service/tests"
+  "$ROOT_DIR/services/ai-service/.venv/bin/ruff" format --check \
+    "$ROOT_DIR/services/ai-service/src" "$ROOT_DIR/services/ai-service/tests"
   "$ROOT_DIR/services/ai-service/.venv/bin/pytest" "$ROOT_DIR/services/ai-service/tests"
   pnpm --dir "$ROOT_DIR/services/web-ui" test --run
-  terraform -chdir="$ROOT_DIR/infrastructure/terraform" fmt -check
+  pnpm --dir "$ROOT_DIR/services/web-ui" build
+  terraform -chdir="$ROOT_DIR/infrastructure/terraform" fmt -check -recursive
+  terraform -chdir="$ROOT_DIR/infrastructure/terraform" init -backend=false -input=false >/dev/null
   terraform -chdir="$ROOT_DIR/infrastructure/terraform" validate
+  kubectl kustomize "$ROOT_DIR/infrastructure/kubernetes/base" >/dev/null
+  kubectl kustomize "$ROOT_DIR/infrastructure/kubernetes/overlays/azure" >/dev/null
 }
 
 case "${1:-}" in

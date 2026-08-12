@@ -7,6 +7,7 @@ from dataclasses import dataclass
 
 import numpy as np
 import psycopg
+from azure.identity import DefaultAzureCredential, get_bearer_token_provider
 from openai import AzureOpenAI
 from pgvector.psycopg import register_vector
 
@@ -32,10 +33,21 @@ class LocalEmbeddingProvider(EmbeddingProvider):
 
 class AzureEmbeddingProvider(EmbeddingProvider):
     def __init__(self, settings: Settings):
+        credentials = (
+            {
+                "api_key": settings.azure_openai_api_key,
+            }
+            if settings.azure_openai_api_key
+            else {
+                "azure_ad_token_provider": get_bearer_token_provider(
+                    DefaultAzureCredential(), "https://cognitiveservices.azure.com/.default"
+                )
+            }
+        )
         self.client = AzureOpenAI(
             azure_endpoint=settings.azure_openai_endpoint,
-            api_key=settings.azure_openai_api_key,
             api_version=settings.azure_openai_api_version,
+            **credentials,
         )
         self.deployment = settings.azure_openai_embedding_deployment
         self.dimensions = settings.ai_embedding_dimensions
@@ -100,8 +112,13 @@ class PostgresVectorStore:
                 """
             )
 
-    def save(self, request: DocumentRequest, checksum: str, chunks: list[tuple[str, str]],
-             embeddings: list[list[float]]) -> DocumentResponse:
+    def save(
+        self,
+        request: DocumentRequest,
+        checksum: str,
+        chunks: list[tuple[str, str]],
+        embeddings: list[list[float]],
+    ) -> DocumentResponse:
         self.ensure_schema()
         with self._connection() as connection:
             existing = connection.execute(
@@ -129,8 +146,10 @@ class PostgresVectorStore:
                     (uuid.uuid4(), document_id, ordinal, section, content, np.array(embedding)),
                 )
             return DocumentResponse(
-                documentId=str(document_id), title=request.title, checksum=checksum,
-                chunkCount=len(chunks)
+                documentId=str(document_id),
+                title=request.title,
+                checksum=checksum,
+                chunkCount=len(chunks),
             )
 
     def search(self, query_embedding: list[float], top_k: int) -> list[RetrievedChunk]:

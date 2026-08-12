@@ -1,0 +1,25 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: application
+  namespace: banking-credit-support
+  annotations:
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+spec:
+  ingressClassName: nginx
+  rules:
+    - host: credit-support.example.invalid
+      http:
+        paths:
+          - path: /api
+            pathType: Prefix
+            backend:
+              service:
+                name: banking-api
+                port: {name: http}
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: web-ui
+                port: {name: http}

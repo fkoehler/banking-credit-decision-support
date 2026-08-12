@@ -1,0 +1,9 @@
+location                = "swedencentral"
+environment             = "dev"
+tenant_id               = "00000000-0000-0000-0000-000000000000"
+kubernetes_version      = "1.32"
+openai_chat_model       = "gpt-4.1-mini"
+openai_embedding_model  = "text-embedding-3-small"
+
+# Supply the password securely instead of adding it here:
+# export TF_VAR_postgres_admin_password='...'

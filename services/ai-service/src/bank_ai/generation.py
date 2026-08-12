@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 
+from azure.identity import DefaultAzureCredential, get_bearer_token_provider
 from openai import AzureOpenAI
 
 from bank_ai.config import Settings
@@ -11,8 +12,14 @@ from bank_ai.rag import RetrievedChunk
 class ExplanationGenerator:
     mode = "template"
 
-    def generate(self, probability: float, risk_band: str, positives: list[str], risks: list[str],
-                 chunks: list[RetrievedChunk]) -> str:
+    def generate(
+        self,
+        probability: float,
+        risk_band: str,
+        positives: list[str],
+        risks: list[str],
+        chunks: list[RetrievedChunk],
+    ) -> str:
         sources = ", ".join(f"{chunk.title} – {chunk.section}" for chunk in chunks[:3])
         source_text = sources or "no indexed policy was available"
         return (
@@ -26,15 +33,32 @@ class AzureExplanationGenerator(ExplanationGenerator):
     mode = "azure-openai"
 
     def __init__(self, settings: Settings):
+        credentials = (
+            {
+                "api_key": settings.azure_openai_api_key,
+            }
+            if settings.azure_openai_api_key
+            else {
+                "azure_ad_token_provider": get_bearer_token_provider(
+                    DefaultAzureCredential(), "https://cognitiveservices.azure.com/.default"
+                )
+            }
+        )
         self.client = AzureOpenAI(
             azure_endpoint=settings.azure_openai_endpoint,
-            api_key=settings.azure_openai_api_key,
             api_version=settings.azure_openai_api_version,
+            **credentials,
         )
         self.deployment = settings.azure_openai_chat_deployment
 
-    def generate(self, probability: float, risk_band: str, positives: list[str], risks: list[str],
-                 chunks: list[RetrievedChunk]) -> str:
+    def generate(
+        self,
+        probability: float,
+        risk_band: str,
+        positives: list[str],
+        risks: list[str],
+        chunks: list[RetrievedChunk],
+    ) -> str:
         context = [
             {"title": chunk.title, "section": chunk.section, "content": chunk.content}
             for chunk in chunks
@@ -64,4 +88,3 @@ def build_generator(settings: Settings) -> ExplanationGenerator:
     if settings.ai_generation_provider == "azure-openai":
         return AzureExplanationGenerator(settings)
     return ExplanationGenerator()
-
