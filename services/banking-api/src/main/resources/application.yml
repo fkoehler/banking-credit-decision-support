@@ -1,0 +1,37 @@
+server:
+  address: ${API_HOST:127.0.0.1}
+  port: ${API_PORT:8080}
+spring:
+  application:
+    name: banking-api
+  datasource:
+    url: ${JDBC_DATABASE_URL:jdbc:postgresql://127.0.0.1:5432/bank_credit_support}
+    username: ${DATABASE_USER:${USER}}
+    password: ${DATABASE_PASSWORD:}
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: validate
+  flyway:
+    enabled: true
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: ${OIDC_ISSUER_URI:}
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus
+app:
+  auth-mode: ${AUTH_MODE:local}
+  ai-service-url: ${AI_SERVICE_URL:http://127.0.0.1:8081}
+  web-origin: ${WEB_ORIGIN:http://127.0.0.1:5173}
+  local-users:
+    advisor:
+      username: ${LOCAL_ADVISOR_USERNAME:advisor}
+      password: ${LOCAL_ADVISOR_PASSWORD:advisor-demo}
+    reviewer:
+      username: ${LOCAL_REVIEWER_USERNAME:reviewer}
+      password: ${LOCAL_REVIEWER_PASSWORD:reviewer-demo}
