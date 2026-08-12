@@ -32,5 +32,43 @@ repository without a documentation server or exported image.
 - The local and Azure provider profiles share the same business contracts.
 - Secrets enter through local ignored overrides or managed Azure identities.
 
-Architecture decisions are recorded in [`decisions`](decisions/README.md).
+## AI and ML responsibility flow
 
+The architecture keeps prediction, retrieval, explanation and accountability as
+separate steps. This prevents a fluent generated answer from being mistaken for
+either a model calculation or a credit decision.
+
+```mermaid
+flowchart LR
+    Case["Synthetic financing case"] --> ML["Classical ML<br/>Calculate probability of default"]
+    Case --> Query["Case-based retrieval query"]
+    Policies["Fictional policy chunks<br/>PostgreSQL + pgvector"] --> RAG["RAG vector search<br/>Retrieve relevant passages"]
+    Query --> RAG
+    ML --> Explain["Template or Azure OpenAI<br/>Explain score and evidence"]
+    RAG --> Explain
+    Explain --> Review["Human reviewer<br/>Check evidence and decide"]
+```
+
+- **ML** learns associations from deterministic synthetic training examples. It
+  compares logistic regression and gradient boosting and returns a versioned
+  probability, not a decision.
+- **RAG** is retrieval-augmented generation: it does not retrain the ML model or
+  decide anything. It finds relevant fictional policy sections by comparing
+  embeddings in pgvector and supplies those sections as evidence.
+- **Generation** uses a deterministic template locally or, when configured, an
+  Azure OpenAI LLM. It writes an understandable explanation from the supplied
+  score, factors and retrieved text; it must cite its context and cannot alter
+  the calculated probability.
+- **Human review** remains the accountable boundary and persists the final
+  decision in the Spring Boot workflow and audit trail.
+
+For the prepared dentist example, EUR 100,000 equity on EUR 450,000 requested
+credit produces a 22.2% equity ratio, while EUR 80,000 existing debt on
+EUR 185,000 annual income produces a 0.43 debt-to-income ratio. The checked-in
+model currently estimates about 3.3% probability of default. RAG retrieves the
+applicable equity and capacity-review passages, and the generator explains this
+combination with citations before a reviewer records an independent outcome.
+The detailed request sequence is shown in
+[Runtime sequences](05-runtime-sequences.md#concrete-dentist-example).
+
+Architecture decisions are recorded in [`decisions`](decisions/README.md).

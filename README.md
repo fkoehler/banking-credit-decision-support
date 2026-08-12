@@ -18,6 +18,45 @@ review, DevSecOps and an Azure/AKS target architecture.
 - Terraform, AKS manifests and a GitLab pipeline with explicit security gates.
 - GitHub Actions for the repository's public test signal.
 
+## How the application works
+
+The application supports a bank employee while reviewing a fictional
+practice-financing case. It deliberately separates four responsibilities:
+
+1. **Classical ML estimates risk.** Training creates 8,000 deterministic,
+   synthetic cases and compares logistic regression with gradient boosting. The
+   candidate with the lower validation Brier score is selected; the checked-in
+   model is gradient boosting. It learns statistical associations in this
+   generated dataset, not real-world lending rules or causal relationships.
+2. **RAG finds relevant policy evidence.** Fictional policies are split into
+   sections, converted to embeddings and stored in PostgreSQL with pgvector. A
+   vector search retrieves the passages that are semantically closest to the
+   current case.
+3. **A generator explains the evidence.** The local default uses a deterministic
+   template. When Azure OpenAI is configured, an LLM receives the already
+   calculated risk score, visible input factors and retrieved passages and turns
+   them into a readable, source-linked explanation. It neither calculates the
+   score nor makes the decision.
+4. **A human reviewer decides.** The reviewer checks the original inputs, model
+   output and cited policy passages, then records an independent decision and
+   comment in the audit trail.
+
+### Concrete example
+
+The prepared demo case describes a dentist with EUR 185,000 annual income,
+EUR 620,000 practice revenue, four years of operating history, EUR 80,000
+existing debt, a requested credit of EUR 450,000, EUR 100,000 equity and no late
+payments. From these values, the application derives an equity ratio of 22.2%
+and a debt-to-income ratio of 0.43. With the currently checked-in model artifact,
+the ML service estimates a probability of default of about 3.3%; retraining or a
+different model version may change that value.
+
+RAG then retrieves passages such as the fictional equity-contribution and
+capacity-review sections. The template or configured LLM combines the score,
+the visible factors and those cited passages into an explanation for the
+reviewer. A low score therefore does not approve the credit: only the human
+reviewer records the final outcome.
+
 ## Start locally
 
 The standard workflow is native and does not require Docker. It expects SDKMAN,
