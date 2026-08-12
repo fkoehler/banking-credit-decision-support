@@ -44,7 +44,7 @@ sequenceDiagram
     AI->>Gen: Score, factors and untrusted context
     Gen-->>AI: Evidence-linked explanation
     AI-->>API: Score, factors, citations and provenance
-    API->>DB: Persist assessment; mark PENDING_REVIEW
+    API->>DB: Persist assessment and mark PENDING_REVIEW
     API-->>UI: Decision-support result
     Reviewer->>UI: Record independent decision and comment
     UI->>API: Submit reviewer decision
